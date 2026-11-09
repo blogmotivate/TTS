@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="ur">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Free Text to Speech Converter | Multi-Language AI Voice Tool</title>
+    <style>
+        * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background: #f4f7fe; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 20px; }
+        .tts-container { background: #ffffff; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); width: 100%; max-width: 600px; padding: 30px; }
+        h1 { color: #2c3e50; font-size: 24px; text-align: center; margin-bottom: 20px; }
+        textarea { width: 100%; height: 140px; border: 2px solid #e2e8f0; border-radius: 10px; padding: 15px; font-size: 16px; outline: none; resize: vertical; }
+        textarea:focus { border-color: #4f46e5; }
+        .controls { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin: 20px 0; }
+        select, input[type="range"] { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #cbd5e1; outline: none; }
+        .label { font-size: 12px; color: #64748b; font-weight: bold; margin-bottom: 5px; display: block; }
+        .btn-group { display: flex; gap: 10px; }
+        button { flex: 1; padding: 12px; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.2s; }
+        .btn-speak { background: #4f46e5; color: #fff; }
+        .btn-speak:hover { background: #4338ca; }
+        .btn-stop { background: #ef4444; color: #fff; }
+        .btn-stop:hover { background: #dc2626; }
+    </style>
+</head>
+<body>
+
+<div class="tts-container">
+    <h1>Text to Speech Converter</h1>
+    
+    <textarea id="text-input" placeholder="Yahan apna text likhein ya paste karein..."></textarea>
+    
+    <div class="controls">
+        <div>
+            <span class="label">SELECT VOICE / LANGUAGE</span>
+            <select id="voice-select"><option value="">Voices Loading...</option></select>
+        </div>
+        <div>
+            <span class="label">SPEED CONTROL</span>
+            <input type="range" id="rate" min="0.5" max="2" value="1" step="0.1">
+        </div>
+    </div>
+
+    <div class="btn-group">
+        <button class="btn-speak" id="speak-btn">Play Voice</button>
+        <button class="btn-stop" id="stop-btn">Stop</button>
+    </div>
+</div>
+
+<script>
+    const synth = window.speechSynthesis;
+    const textInput = document.getElementById('text-input');
+    const voiceSelect = document.getElementById('voice-select');
+    const rateInput = document.getElementById('rate');
+    const speakBtn = document.getElementById('speak-btn');
+    const stopBtn = document.getElementById('stop-btn');
+
+    let voices = [];
+
+    function populateVoiceList() {
+        voices = synth.getVoices();
+        voiceSelect.innerHTML = '';
+        
+        voices.forEach((voice, index) => {
+            const option = document.createElement('option');
+            option.textContent = `${voice.name} (${voice.lang})`;
+            option.setAttribute('data-name', voice.name);
+            option.setAttribute('data-lang', voice.lang);
+            voiceSelect.appendChild(option);
+        });
+    }
+
+    populateVoiceList();
+    if (speechSynthesis.onvoiceschanged !== undefined) {
+        speechSynthesis.onvoiceschanged = populateVoiceList;
+    }
+
+    speakBtn.addEventListener('click', () => {
+        if (synth.speaking) synth.cancel();
+
+        if (textInput.value !== '') {
+            const speakUtterance = new SpeechSynthesisUtterance(textInput.value);
+            const selectedVoiceName = voiceSelect.selectedOptions[0].getAttribute('data-name');
+            
+            voices.forEach((voice) => {
+                if (voice.name === selectedVoiceName) {
+                    speakUtterance.voice = voice;
+                }
+            });
+
+            speakUtterance.rate = rateInput.value;
+            synth.speak(speakUtterance);
+        }
+    });
+
+    stopBtn.addEventListener('click', () => {
+        synth.cancel();
+    });
+</script>
+
+</body>
+</html>
